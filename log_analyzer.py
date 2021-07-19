@@ -106,10 +106,10 @@ def main():
                                       'time_max': request_time,
                                       'time_med': request_time}
                 else:
-                    statistics[id]['time_sum'] += request_time
-                    statistics[id]['time_avg'] = (statistics[id]['time_avg'] *
-                                                  statistics[id]['count'] + request_time) /\
-                                                 (statistics[id]['count'] + 1)
+                    statistics[id]['time_sum'] = round(statistics[id]['time_sum'] + request_time, 3)
+                    statistics[id]['time_avg'] = round((statistics[id]['time_avg'] *
+                                                        statistics[id]['count'] + request_time) /\
+                                                       (statistics[id]['count'] + 1), 3)
                     statistics[id]['time_max'] = statistics[id]['time_max'] \
                         if statistics[id]['time_max'] > request_time \
                         else request_time
@@ -123,8 +123,8 @@ def main():
                 break
         report = []
         for address in statistics:
-            statistics[address]['count_perc'] = statistics[address]['count'] / total_count * 100
-            statistics[address]['time_perc'] = statistics[address]['time_sum'] / total_request_time * 100
+            statistics[address]['count_perc'] = round(statistics[address]['count'] / total_count * 100, 3)
+            statistics[address]['time_perc'] = round(statistics[address]['time_sum'] / total_request_time * 100, 3)
             statistics[address]['url'] = address
             report.append(statistics[address])
 
@@ -138,9 +138,6 @@ def main():
                         line = line.replace('$table_json', str(report))
                     report_file.write(line)
 
-
-        # Save report
-        print(statistics)
     finally:
         logfile.close()
 
