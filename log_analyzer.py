@@ -93,12 +93,13 @@ def parse_lines(file_name):
 def main():
     # Get actual log file
     logfile_name, logfile_date = get_actual_log_file(config['LOG_DIR'])
+    report_filename = f"{config['REPORT_DIR']}/report-{logfile_date}.html"
     if logfile_name is None:
         logging.info('Log file has not found.')
     else:
-        if os.path.isfile(os.path.join(config['REPORT_DIR'], f'{logfile_name}.log')):
+        if os.path.isfile(report_filename):
             logging.info('Log file already exists, skip this time.')
-            return 1
+            return 0
     statistics = {}
     total_request_time = 0
     total_count = 0
@@ -132,7 +133,6 @@ def main():
 
     # Render report
     report_template_filename = f"{config['LOG_DIR']}/report.html"
-    report_filename = f"{os.path.dirname(logfile_name)}/report-{logfile_date}.html"
     with open(report_template_filename, 'r') as template:
         with open(report_filename, 'w') as report_file:
             report_file.write(template.read().replace('$table_json', str(report)))
