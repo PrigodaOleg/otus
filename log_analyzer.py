@@ -6,7 +6,6 @@ import os
 import re
 import datetime
 import gzip
-import decimal
 
 
 # log_format ui_short '$remote_addr  $remote_user $http_x_real_ip [$time_local] "$request" '
@@ -84,48 +83,61 @@ def main():
         for line in logfile:
             match = re_fields.match(line)
             if match:
-                ip,\
+                ip, \
                 id_1, \
                 id_2, \
                 date, \
                 request, \
                 responce, \
                 id_3, \
-                id_4, \
+                url, \
                 source, \
                 id_5, \
                 id_6, \
                 id_7, \
                 request_time = match.groups()
-                request_time = decimal.Decimal(request_time)
-                if ip not in statistics:
-                    statistics[ip] = {'count': 1,
+                request_time = float(request_time)
+                id = request.split()
+                id = id[1] if len(id) > 1 else id[0]
+                if id not in statistics:
+                    statistics[id] = {'count': 1,
                                       'time_sum': request_time,
                                       'time_avg': request_time,
                                       'time_max': request_time,
                                       'time_med': request_time}
                 else:
-                    statistics[ip]['time_sum'] += request_time
-                    statistics[ip]['time_avg'] = (statistics[ip]['time_avg'] *
-                                                  statistics[ip]['count'] + request_time) /\
-                                                 (statistics[ip]['count'] + 1)
-                    statistics[ip]['time_max'] = statistics[ip]['time_max'] \
-                        if statistics[ip]['time_max'] > request_time \
+                    statistics[id]['time_sum'] += request_time
+                    statistics[id]['time_avg'] = (statistics[id]['time_avg'] *
+                                                  statistics[id]['count'] + request_time) /\
+                                                 (statistics[id]['count'] + 1)
+                    statistics[id]['time_max'] = statistics[id]['time_max'] \
+                        if statistics[id]['time_max'] > request_time \
                         else request_time
-                    statistics[ip]['count'] += 1
+                    statistics[id]['count'] += 1
                 total_request_time += request_time
                 total_count += 1
             else:
-                print(f'====================={line}')
+                print(f'Line skipped: {line}')
             c += 1
-            if c == 2000:
+            if c > 100000:
                 break
+        report = []
         for address in statistics:
             statistics[address]['count_perc'] = statistics[address]['count'] / total_count * 100
             statistics[address]['time_perc'] = statistics[address]['time_sum'] / total_request_time * 100
+            statistics[address]['url'] = address
+            report.append(statistics[address])
 
         # Render report
-        pass
+        report_template_filename = f"{config['LOG_DIR']}/report.html"
+        report_filename = f"{os.path.dirname(logfile_name)}/report_.html"
+        with open(report_template_filename, 'r') as template:
+            with open(report_filename, 'w') as report_file:
+                for line in template:
+                    if '$table_json' in line:
+                        line = line.replace('$table_json', str(report))
+                    report_file.write(line)
+
 
         # Save report
         print(statistics)
