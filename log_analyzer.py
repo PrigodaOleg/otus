@@ -54,19 +54,19 @@ def parse_lines(file_name):
     skipped_lines = 0
     total_lines = 0
     try:
-        re_fields = re.compile(r'(\d+\.\d+\.\d+\.\d+) '                                 # ip
-                               r'([\da-f]+|-)\s{1,2}'                                   # id?
-                               r'(.|-) '                                                # ?
-                               r'(\[\d+\/\w+\/\d+:\d+:\d+:\d+ \+\d+]) '                 # date time offset
-                               r'"((?:(?:GET|POST|HEAD|PUT|OPTIONS) .+)|0)" '           # http request
-                               r'(\d+) '                                                # responce
-                               r'(\d+) '                                                # ?
-                               r'"(.*)" '                                               # url
-                               r'"(.*)" '                                               # source
-                               r'"(.*)" '                                               # ?
-                               r'"((?:\d+-\d+-\d+-\d+|.+))" '                           # ?
-                               r'"(.+)" '                                               # ?
-                               r'(\d+\.\d+)'                                            # request time
+        re_fields = re.compile(r'(\d+\.\d+\.\d+\.\d+) '                                 # $remote_addr
+                               r'([\da-f]+|-)\s{1,2}'                                   # $remote_user
+                               r'(.|-) '                                                # $http_x_real_ip
+                               r'(\[\d+\/\w+\/\d+:\d+:\d+:\d+ \+\d+]) '                 # [$time_local]
+                               r'"((?:(?:GET|POST|HEAD|PUT|OPTIONS) .+)|0)" '           # $request
+                               r'(\d+) '                                                # $status
+                               r'(\d+) '                                                # $body_bytes_sent
+                               r'"(.*)" '                                               # $http_referer
+                               r'"(.*)" '                                               # $http_user_agent
+                               r'"(.*)" '                                               # $http_x_forwarded_for
+                               r'"((?:\d+-\d+-\d+-\d+|.+))" '                           # $http_X_REQUEST_ID
+                               r'"(.+)" '                                               # $http_X_RB_USER
+                               r'(\d+\.\d+)'                                            # $request_time
                                )
         c = 200000
         for line in logfile:
@@ -102,7 +102,7 @@ def main():
     statistics = {}
     total_request_time = 0
     total_count = 0
-    for ip, _, _, date, request, response, _, url, source, _, _, _, request_time in parse_lines(logfile_name):
+    for _, _, _, _, request, _, _, _, _, _, _, _, request_time in parse_lines(logfile_name):
         request_time = float(request_time)
         id = request.split()
         id = id[1] if len(id) > 1 else id[0]
