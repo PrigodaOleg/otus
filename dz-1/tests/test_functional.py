@@ -1,4 +1,4 @@
-import log_analyzer
+from .. import log_analyzer
 import sys
 
 
